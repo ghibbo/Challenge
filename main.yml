@@ -1,0 +1,7 @@
+- name: Initialize system
+  hosts: all
+  roles:
+          - initialize
+          - docker
+          - swarm
+  become: yes
