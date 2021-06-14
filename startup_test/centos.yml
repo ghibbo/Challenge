@@ -1,0 +1,40 @@
+---
+- name: deploy
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Create user
+      user:
+        name: vmuser
+        state: present
+        shell: /bin/bash
+        password: "{{ 'Password1' | password_hash('sha512') }}"
+        update_password: on_create
+    - name: Edit Sshd Config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PasswordAuthentication '
+        insertafter: '#PasswordAuthentication'
+        line: 'PasswordAuthentication yes'
+      notify: restart_sshd
+    - name: Add sudo rights for vmuser
+      copy:
+        dest: /etc/sudoers.d/vmuser
+        content: "vmuser ALL=(root) NOPASSWD: ALL"
+        backup: true
+    - name: Install Base Package
+      package:
+        state: latest
+        name:
+          - bash-completion
+          - vim
+          - nano
+
+  handlers:
+    - name: restart_sshd
+      service:
+        name: sshd
+        state: restarted
+    
+  
