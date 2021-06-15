@@ -1,8 +1,10 @@
 - name: Install basic packages
   package:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - "{{ basic_pkgs }}"
+    state: latest
+    name:
+      - bash-completion
+      - vim
+      - nano
+      - tmux
   tags: [initialize, basic_pkgs]
 
