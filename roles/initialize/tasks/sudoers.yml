@@ -1,0 +1,6 @@
+- name: Add sudo rights for vmuser
+  copy:
+    dest: /etc/sudoers.d/vmuser
+    content: "vmuser ALL=(root) NOPASSWD: ALL"
+    backup: true
+  tags: [initialize, sudoers]

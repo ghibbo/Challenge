@@ -1,2 +1,17 @@
 ---
 # tasks file for initialize
+- name: Include basic_pkgs
+  include: basic_pkgs.yml
+  tags: [common, basic_pkgs]
+
+- name: Include create_user.yml
+  include: create_user.yml
+  tags: [common, create_user]
+
+- name: Include sudoers.yml
+  include: sudoers.yml
+  tags: [common, sudoers]
+
+- name: Include sshd.yml
+  include: sshd.yml
+  tags: [common, sshd]

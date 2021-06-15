@@ -1,2 +1,8 @@
 ---
 # defaults file for initialize
+basic_pkgs:
+  name:
+    - bash-completion
+    - vim
+    - nano
+    - tmux

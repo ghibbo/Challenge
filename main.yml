@@ -1,7 +1,9 @@
 - name: Initialize system
   hosts: all
+  gather_facts: false
+  #become: true
   roles:
-          - initialize
-          - docker
-          - swarm
+        - initialize
+        - docker
+        - swarm
   become: yes
