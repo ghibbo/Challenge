@@ -1,2 +1,3 @@
 ---
 # tasks file for docker
+- include_tasks: docker-centos.yml
