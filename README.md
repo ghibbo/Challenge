@@ -6,7 +6,7 @@ Docker Daemon is configured as a service that starts automatically at system sta
 Set up a Docker Swarm on the VMs, which is securely accessible.
 Interaction and deploy services on the Swarm from local machine. 
 
-![](avatar.png)
+![](challenge.png)
 
 ## Provisioning
 Vagrant supports provisioning systems with Ansible.
