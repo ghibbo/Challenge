@@ -1,3 +1,9 @@
 ---
 # tasks file for docker
 - include_tasks: docker-centos.yml
+
+- include_tasks: docker-daemon.yml
+
+- include_tasks: docker-users.yml
+  when: docker_users | length > 0
+

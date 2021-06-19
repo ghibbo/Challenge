@@ -1,0 +1,9 @@
+
+- name: "Update docker service"
+  replace:
+    path: "/lib/systemd/system/docker.service"
+    regexp: "^ExecStart.*"
+    replace: "ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:7777"
+  notify: 
+    - "Restart docker"
+    - "Reload daemon"

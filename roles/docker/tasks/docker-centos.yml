@@ -1,5 +1,5 @@
 ---
-- name: Ensure old versions of Docker are not installed.
+- name: Check old versions of Docker not installed.
   package:
     name:
       - docker
@@ -18,8 +18,18 @@
   package:
     name: "{{ docker_package }}"
     state: "{{ docker_package_state }}"
-  notify: restart docker
+  notify: Restart docker
   ignore_errors: "{{ ansible_check_mode }}"
+
+- name: "Install pip"
+  package: 
+    name: "python3-pip"
+    state: present
+    update_cache: true
+    
+- name: "Install Docker SDK"
+  pip:
+    name: "docker"
 
 - name: Ensure Docker is started and enabled at boot.
   service:
