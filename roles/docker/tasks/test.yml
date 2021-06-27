@@ -1,0 +1,15 @@
+- name: Create test directory on managed node
+  file:
+    path: /home/vmuser/test
+    state: directory
+
+- name: Copying Webpage to managed node directory
+  copy:
+    src: index.html
+    dest: /home/vmuser/test/index.html
+
+- name: Pulling docker image
+  docker_image:
+      name: httpd
+      source: pull
+
