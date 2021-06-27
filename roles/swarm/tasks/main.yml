@@ -1,2 +1,3 @@
 ---
 # tasks file for swarm
+- include_tasks: swarm-init.yml

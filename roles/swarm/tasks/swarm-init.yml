@@ -1,0 +1,64 @@
+---
+- name: Check "Swarm" is enabled.
+  shell: docker info
+  changed_when: false
+  register: docker_info
+
+- name: Create Swarm-Manager functional group
+  add_host:
+    hostname: "{{ item }}"
+    groups: swarm_manager_functional
+  with_items: "{{ ansible_play_hosts | default(play_hosts) }}"
+  when: "'active' in hostvars[item].docker_info.stdout_lines"
+  run_once: true
+
+- name: Create Swarm-Manager unfunctional group
+  add_host:
+    hostname: "{{ item }}"
+    groups: swarm_manager_unfunctional
+  with_items: "{{ ansible_play_hosts | default(play_hosts) }}"
+  when: "'active' not in hostvars[item].docker_info.stdout_lines and item == 'centos_vm1'"
+  run_once: true
+
+- name: Create Swarm-Worker joined group
+  add_host:
+    hostname: "{{ item }}"
+    groups: swarm_worker_joined
+  with_items: "{{ ansible_play_hosts | default(play_hosts) }}"
+  when: "'active' in hostvars[item].docker_info.stdout_lines"
+  run_once: true
+
+- name: Create Swarm_Worker unjoined group
+  add_host:
+    hostname: "{{ item }}"
+    groups: swarm_worker_unjoined
+  with_items: "{{ ansible_play_hosts | default(play_hosts) }}"
+  when: "'active' not in hostvars[item].docker_info.stdout_lines and item != 'centos_vm1'"
+  run_once: true
+
+- name: Init "Swarm Mode" on Node Manager.
+  command: docker swarm init 
+    --listen-addr={{ swarm_iface | default('eth1') }}:2377
+    --advertise-addr={{ swarm_iface | default('eth1') }}
+  when: "'swarm_manager_unfuctional' in groups"
+  register: initialize_first_node
+
+- name: Get Worker join-token.
+  shell: docker swarm join-token -q worker
+  register: swarm_worker_token
+  when: initialize_first_node is changed
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Get Manager join-token.
+  shell: docker swarm join-token -q manager
+  register: swarm_manager_token
+  when: initialize_first_node is changed
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Join the Swarm Worker nodes.
+  command: docker swarm join
+        --advertise-addr = {{ swarm_iface | default('eth1') }}:2377
+        --token "{{ swarm_manager_token.stdout }}"
+        192.168.10.101:2377
+  changed_when: false
+  when: "'swarm_worker_unjoined' in group_names"
