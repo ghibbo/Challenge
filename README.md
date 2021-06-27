@@ -1,12 +1,13 @@
 # Challenge
 Realizzare un playbook Ansible che permetta di svolgere le seguenti attivita':
+
 1. Provisioning di VMs CentOS. Le VM possono essere locali o su un Cloud provider a scelta.
 2. Configurare le VM:
 	a. Assicurarsi che la partizione utilizzata da Docker abbia almeno 10GB di spazio disponibile
 3. Setup di Docker sulle VM
 4. Configurare Docker:
 	a. Esporre le API REST del Docker Daemon in modo sicuro
-	b. Assicurarsi che il Docker Daemon sia configurato come un servizio che parta      automaticamente all'avvio del sistema
+	b. Assicurarsi che il Docker Daemon sia configurato come un servizio che parta automaticamente all'avvio del sistema
 5. Configurare un Docker Swarm sulle VM, che sia accessibile in modo sicuro.
 Assicurarsi di riuscire ad interagire e deployare servizi sullo Swarm dalla macchina locale.
 Opzionalmente:
@@ -18,14 +19,11 @@ riferimenti utili). In caso di riutilizzo di codice e' importante motivare I cri
 selezione del ruolo, conoscerne le feature e I contenuti, e saper descrivere eventuali
 personalizzazioni effettuate ai fini di svolgere le attivita' di cui sopra.
 Versioning del Codice:
-1. Versionare il codice su un repository pubblico su Github.com, in modo che vi sia
-una chiara descrizione del lavoro svolto nella History del repository;
+1. Versionare il codice su un repository pubblico su Github.com
 Continuous Integration:
-1. Configurare una pipeline di Continuous Integration su un tool a scelta
-(consiglio: Travis, per la semplice integrazione con GitHub, Ansible Docker);
+1. Configurare una pipeline di Continuous Integration su un tool a scelta (Travis)
 2. La pipeline deve:
-a. Eseguire il linting del codice e fallire in caso di errori, che vanno
-opportunamente corretti
+	a. Eseguire il linting del codice e fallire in caso di errori, che vanno opportunamente corretti
 
 ## Descrizione
 Questo playbook fornisce 'n' VM Centos, le VM sono locali.
