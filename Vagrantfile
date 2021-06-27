@@ -1,6 +1,6 @@
 Vagrant.configure("2") do |config|
   
-  number_of_machines = 2
+  number_of_machines = 3
   
   box_name = "centos/8"
 
