@@ -1,5 +1,7 @@
 ---
 # tasks file for docker
+- include_tasks: docker-disk.yml
+
 - include_tasks: docker-centos.yml
 
 - include_tasks: docker-daemon.yml

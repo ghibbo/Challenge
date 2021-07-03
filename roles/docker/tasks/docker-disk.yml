@@ -1,0 +1,18 @@
+- name: New 40GB partition 
+  parted:
+    device: /dev/sdb
+    number: 1
+    state: present
+    part_end: 40GB
+
+- name: Create an EXT4 filesystem 
+  filesystem:
+    fstype: ext4
+    dev: /dev/sdb1
+
+- name: Mount device
+  mount:
+    path: /docker_data
+    src: /dev/sdb1 
+    fstype: ext4
+    state: mounted
