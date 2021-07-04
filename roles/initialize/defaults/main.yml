@@ -1,8 +1,6 @@
 ---
 # defaults file for initialize
-basic_pkgs:
-  name:
-    - bash-completion
-    - vim
-    - nano
-    - tmux
+epel_repo_url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm"
+epel_repo_gpg_key_url: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8"
+epel_repofile_path: "/etc/yum.repos.d/epel.repo"
+epel_repo_disable: false

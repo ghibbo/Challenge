@@ -1,3 +1,26 @@
+---
+- name: Check if EPEL repo is configured.
+  stat:
+    path: "{{ epel_repofile_path }}"
+  register: epel_repofile_check
+
+- name: Import EPEL GPG key.
+  rpm_key:
+    key: "{{ epel_repo_gpg_key_url }}"
+    state: present
+  register: control
+  until: control is succeeded
+  when: not epel_repofile_check.stat.exists
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Install EPEL repo.
+  yum:
+    name: "{{ epel_repo_url }}"
+    state: present
+  register: control
+  until: control is succeeded
+  when: not epel_repofile_check.stat.exists
+
 - name: Install basic packages
   package:
     state: latest
@@ -6,5 +29,9 @@
       - vim
       - nano
       - tmux
+      - python3-cryptography
+      - python3-pyOpenSSL
   tags: [initialize, basic_pkgs]
+
+
 
