@@ -1,10 +1,27 @@
 ---
 # handlers file for docker
-- name: "Restart docker"
+- name: "Restart Docker"
   service:
     name: "docker"
+    #state: {{ docker_restart_handler_state }}
+    #ignore_errors: "{{ ansible_check_mode }}"
     state: restarted
 
-- name: "Reload daemon"
+- name: "Reload Daemon"
   systemd:
     daemon_reload: yes
+
+- name: "Stop Docker Service"
+  service:
+    name: docker.service
+    state: stopped
+
+- name: "Stop Docker Socket"
+  service:
+    name: docker.service
+    state: stopped
+
+- name: "Start Docker"
+  service:
+    name: docker
+    state: started

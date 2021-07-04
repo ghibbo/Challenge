@@ -8,19 +8,19 @@
 
 - name: Create CA key
   openssl_privatekey:
-    path: "{{ certificate_folder }}/CA_key.pem"
+    path: "{{ certificate_folder }}/ca_key.pem"
   register: ca_key
 
 - name: Create the CA CSR
   openssl_csr:
-    path: "{{ certificate_folder }}/CA.csr"
+    path: "{{ certificate_folder }}/ca.csr"
     privatekey_path: "{{ ca_key.filename }}"
     common_name: "my-ca"
   register: ca_csr
 
 - name: Self Sign the CA CSR
   openssl_certificate:
-    path: "{{ certificate_folder }}/CA.pem"
+    path: "{{ certificate_folder }}/ca.pem"
     csr_path: "{{ ca_csr.filename }}"
     privatekey_path: "{{ ca_key.filename }}"
     provider: selfsigned
@@ -77,8 +77,8 @@
   openssl_certificate:
     path: "{{ certificate_folder }}/client_cert.pem"
     csr_path: "{{ client_csr.filename }}"
-    ownca_path: "{{ certificate_folder }}/CA.pem"
-    ownca_privatekey_path: "{{ certificate_folder }}/CA_key.pem"
+    ownca_path: "{{ certificate_folder }}/ca.pem"
+    ownca_privatekey_path: "{{ certificate_folder }}/ca_key.pem"
     provider: ownca
   register: client_crt
 
@@ -89,7 +89,7 @@
     group: vmuser
     mode: '0400'
   with_items:
-    - CA_key.pem
+    - ca_key.pem
     - server_key.pem
     - client_key.pem
 
@@ -100,7 +100,7 @@
     group: vmuser
     mode: '0444'
   with_items:
-    - CA.pem
+    - ca.pem
     - server_cert.pem
     - client_cert.pem
 
@@ -111,7 +111,7 @@
     owner: vmuser
     group: vmuser
   with_items:
-    - CA.csr
+    - ca.csr
     - server.csr
     - client.csr
 
@@ -121,6 +121,6 @@
     dest: /tmp/cert-{{ inventory_hostname }}/
     flat: yes
   with_items:
-    - CA.pem
+    - ca.pem
     - client_key.pem
     - client_cert.pem
