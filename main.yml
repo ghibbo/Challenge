@@ -1,5 +1,15 @@
 - name: Initialize system
   hosts: all
+  vars:
+    - certificate_folder: /home/vmuser/certificates
+    - server_hostname: server
+    - client_hostname: client 
+    - key_size: 4096
+    - passphrase: # Set passphrase if you want
+    - key_type: RSA
+    - country_name: IT
+    - email_address: 
+    - organization_name:
   gather_facts: false
   #become: true
   roles:
