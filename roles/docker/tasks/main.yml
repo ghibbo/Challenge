@@ -1,11 +1,19 @@
 ---
 # tasks file for docker
-- include_tasks: docker-disk.yml
+- name: Create Docker Disk
+  include_tasks: docker-disk.yml
 
-- include_tasks: docker-centos.yml
+- name: Install Docker CE 
+  include_tasks: docker-centos.yml
 
-- include_tasks: docker-daemon.yml
+- name: Include gen-certs.yml
+  include: gen-certs.yml
+  tags: [common, certs]
 
-- include_tasks: docker-users.yml
+- name: Docker Daemon
+  include_tasks: docker-daemon.yml
+
+- name: Add Docker User
+  include_tasks: docker-users.yml
   when: docker_users | length > 0
 

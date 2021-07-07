@@ -16,6 +16,3 @@
   include: sshd.yml
   tags: [common, sshd]
 
-- name: Include gen-certs.yml
-  include: gen-certs.yml
-  tags: [common, certs]

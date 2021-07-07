@@ -15,7 +15,13 @@
   openssl_csr:
     path: "{{ certificate_folder }}/ca.csr"
     privatekey_path: "{{ ca_key.filename }}"
-    common_name: "my-ca"
+    basic_constraints:
+      - CA:TRUE
+    key_usage:
+      - digitalSignature
+      - cRLSign
+      - keyCertSign
+    common_name: centos-vm1
   register: ca_csr
 
 - name: Self Sign the CA CSR
@@ -29,8 +35,8 @@
 - name: Generate the Server private key
   openssl_privatekey:
     path: "{{ certificate_folder }}/{{ server_hostname }}_key.pem"
-    size: "{{ key_size }}"
-    type: "{{ key_type }}"
+    #size: "{{ key_size }}"
+    #type: "{{ key_type }}"
     backup: yes
   register: server_key
 
@@ -41,7 +47,7 @@
     country_name: "{{ country_name }}"
     organization_name: "{{ organization_name }}"
     email_address: "{{ email_address }}"
-    common_name: centos-vm1
+    common_name: centos-vm1 #"{{ server_hostname }}"
     subject_alt_name: 'DNS:centos-vm1,IP:192.168.10.101,IP:127.0.0.1'
     extended_key_usage:
       - serverAuth
@@ -59,12 +65,12 @@
 - name: Generate the Client private key
   openssl_privatekey:
     path: "{{ certificate_folder }}/client_key.pem"
-    size: "{{ key_size }}"
-    type: "{{ key_type }}"
+    #size: "{{ key_size }}"
+    #type: "{{ key_type }}"
     backup: yes
   register: client_key
 
-- name: Generate the Client CST with Subject information
+- name: Generate the Client CSR with Subject information
   openssl_csr:
     path: "{{ certificate_folder }}/client.csr"
     privatekey_path: "{{ client_key.filename }}"
