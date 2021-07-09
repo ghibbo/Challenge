@@ -65,10 +65,10 @@
     cacheable: yes
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Swarm Info Debug
-  ansible.builtin.debug: 
-    msg: "{{ swarm_join_token }}"
-  ignore_errors: "{{ ansible_check_mode }}"
+# - name: Swarm Info Debug
+#   ansible.builtin.debug: 
+#     msg: "{{ swarm_join_token }}"
+#   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Copy Swarm information to file
   copy: 
@@ -96,10 +96,10 @@
   register: token
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Token Debug
-  ansible.builtin.debug: 
-    msg: "{{ token['content'] | b64decode }}"
-  ignore_errors: "{{ ansible_check_mode }}"
+# - name: Token Debug
+#   ansible.builtin.debug: 
+#     msg: "{{ token['content'] | b64decode }}"
+#   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Join the Swarm worker nodes.
   command: docker swarm join
