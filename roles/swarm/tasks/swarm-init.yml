@@ -85,6 +85,17 @@
     dest: /tmp/token.txt
   when: "'swarm_worker_unjoined' in groups"
 
+- name: Extract Token from file
+  slurp:
+    src: /tmp/token.txt
+  register: token
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Token Debug
+  ansible.builtin.debug: 
+    msg: "{{ token['content'] | b64decode }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+
 - name: Join the Swarm Worker nodes.
   command: docker swarm join
         --token "{{ swarm_manager_token.stdout }}"
