@@ -43,21 +43,30 @@
   when: "'swarm_manager_unfunctional' in groups"
   register: initialize_first_node
 
-- name: Get Worker join-token.
-  shell: docker swarm join-token -q worker
-  register: swarm_worker_token
-  when: initialize_first_node is changed
-  ignore_errors: "{{ ansible_check_mode }}"
-
 - name: Get Manager join-token.
   shell: docker swarm join-token -q manager
   register: swarm_manager_token
   when: initialize_first_node is changed
   ignore_errors: "{{ ansible_check_mode }}"
 
+- name: Get Worker join-token.
+  shell: docker swarm join-token -q worker
+  register: swarm_worker_token
+  when: initialize_first_node is changed
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Add Swarm Information 
+  # add_host: 
+  #   hostname: "{{ inventory_hostname }}"
+  #   manager_token: "{{ swarm_manager_token }}"
+  #   worker_token: "{{ swarm_worker_token }}"
+  set_fact:
+    swarm_join_token: "{{ swarm_worker_token.stdout }}"
+    cacheable: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+
 - name: Join the Swarm Worker nodes.
   command: docker swarm join
-        --advertise-addr = {{ swarm_iface | default('eth1') }}:2377
         --token "{{ swarm_manager_token.stdout }}"
         192.168.10.101:2377
   changed_when: false
