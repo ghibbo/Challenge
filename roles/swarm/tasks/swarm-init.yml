@@ -55,7 +55,7 @@
   when: initialize_first_node is changed
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Add Swarm Information 
+- name: Add Swarm information 
   # add_host: 
   #   hostname: "{{ inventory_hostname }}"
   #   manager_token: "{{ swarm_manager_token }}"
@@ -63,6 +63,11 @@
   set_fact:
     swarm_join_token: "{{ swarm_worker_token.stdout }}"
     cacheable: yes
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Swarm Info Debug
+  ansible.builtin.debug: 
+    msg: "{{ swarm_join_token }}"
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Copy Swarm information to file
@@ -96,9 +101,8 @@
     msg: "{{ token['content'] | b64decode }}"
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Join the Swarm Worker nodes.
+- name: Join the Swarm worker nodes.
   command: docker swarm join
-        --token "{{ swarm_manager_token.stdout }}"
+        --token "{{ token['content'] | b64decode }}"
         192.168.10.101:2377
-  changed_when: false
-  when: "'swarm_worker_unjoined' in group_names"
+  when: "'swarm_worker_unjoined' in groups"
