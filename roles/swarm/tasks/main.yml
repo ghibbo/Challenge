@@ -1,3 +1,4 @@
 ---
 # tasks file for swarm
-- include_tasks: swarm-init.yml
+- name: Configure Docker Swarm
+  include_tasks: swarm-init.yml

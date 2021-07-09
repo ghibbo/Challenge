@@ -40,7 +40,7 @@
   command: docker swarm init 
     --listen-addr={{ swarm_iface | default('eth1') }}:2377
     --advertise-addr={{ swarm_iface | default('eth1') }}
-  when: "'swarm_manager_unfuctional' in groups"
+  when: "'swarm_manager_unfunctional' in groups"
   register: initialize_first_node
 
 - name: Get Worker join-token.
