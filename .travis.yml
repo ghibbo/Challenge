@@ -2,8 +2,10 @@ language: python
 python: '3.6'
 
 install:
-  # Install ansible
+  # Install requirements
   - pip install ansible
+  - pip install ansible-lint
+  - pip install molecule
 
   # Check ansible version
   - ansible --version
