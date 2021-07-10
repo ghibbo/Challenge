@@ -1,3 +1,5 @@
+[![Build Status](https://app.travis-ci.com/ghibbo/Challenge.svg?branch=main)](https://app.travis-ci.com/ghibbo/Challenge)
+
 # Challenge
 Realizzare un playbook Ansible che permetta di svolgere le seguenti attività:
 
