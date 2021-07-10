@@ -11,4 +11,4 @@ install:
   - ansible --version
 
 script:
-- ansible-lint main.yml -x 206 -x 508 -v
+- ansible-lint main.yml -x 206 -x 503 -v
