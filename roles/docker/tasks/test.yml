@@ -2,14 +2,26 @@
   file:
     path: /home/vmuser/test
     state: directory
+    mode: 0755
 
 - name: Copying Webpage to managed node directory
   copy:
     src: index.html
     dest: /home/vmuser/test/index.html
+    mode: 0644
 
 - name: Pulling docker image
   docker_image:
       name: httpd
       source: pull
 
+- name: Creating a container
+  docker_container:
+    name: web
+    image: httpd
+    volumes:
+      -  /home/vmuser/test/:/usr/local/apache2/htdocs/
+    ports:
+      -  "8080:80"
+    state: started
+    detach: yes

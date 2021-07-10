@@ -1,2 +1,28 @@
 ---
 # handlers file for swarm
+- name: Manage-Token
+  block:
+    - name: Get Manager join-token.
+      command: docker swarm join-token -q manager
+      register: swarm_manager_token
+      ignore_errors: "{{ ansible_check_mode }}"
+
+    - name: Get Worker join-token.
+      command: docker swarm join-token -q worker
+      register: swarm_worker_token
+      ignore_errors: "{{ ansible_check_mode }}"
+
+    - name: Copy Swarm information to file
+      copy: 
+        dest: /tmp/token.txt
+        content: "{{ swarm_worker_token.stdout }}"
+        mode: 0644
+      register: token_saved
+
+    - name: Save Token Locally
+      fetch:
+        src: /tmp/token.txt
+        dest: /tmp/token.txt
+        flat: yes
+
+    

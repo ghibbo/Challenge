@@ -1,6 +1,6 @@
 ---
 - name: Check "Swarm" is enabled.
-  shell: docker info
+  command: docker info
   changed_when: false
   register: docker_info
 
@@ -42,18 +42,19 @@
     --advertise-addr={{ swarm_iface | default('eth1') }}
   when: "'swarm_manager_unfunctional' in groups"
   register: initialize_first_node
+  notify: Manage-Token
 
-- name: Get Manager join-token.
-  shell: docker swarm join-token -q manager
-  register: swarm_manager_token
-  when: initialize_first_node is changed
-  ignore_errors: "{{ ansible_check_mode }}"
+# - name: Get Manager join-token.
+#   command: docker swarm join-token -q manager
+#   register: swarm_manager_token
+#   when: initialize_first_node is changed
+#   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Get Worker join-token.
-  shell: docker swarm join-token -q worker
-  register: swarm_worker_token
-  when: initialize_first_node is changed
-  ignore_errors: "{{ ansible_check_mode }}"
+# - name: Get Worker join-token.
+#   command: docker swarm join-token -q worker
+#   register: swarm_worker_token
+#   when: initialize_first_node is changed
+#   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Add Swarm information 
   # add_host: 
@@ -70,24 +71,26 @@
 #     msg: "{{ swarm_join_token }}"
 #   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Copy Swarm information to file
-  copy: 
-    dest: /tmp/token.txt
-    content: "{{ swarm_worker_token.stdout }}" 
-  register: token_saved
-  when: initialize_first_node is changed
+# - name: Copy Swarm information to file
+#   copy: 
+#     dest: /tmp/token.txt
+#     content: "{{ swarm_worker_token.stdout }}"
+#     mode: 0644
+#   register: token_saved
+#   when: initialize_first_node is changed
 
-- name: Save Token Locally
-  fetch:
-    src: /tmp/token.txt
-    dest: /tmp/token.txt
-    flat: yes
-  when: token_saved is changed
+# - name: Save Token Locally
+#   fetch:
+#     src: /tmp/token.txt
+#     dest: /tmp/token.txt
+#     flat: yes
+#   when: token_saved is changed
 
 - name: Update Token Remotely
   copy:
     src: /tmp/token.txt
     dest: /tmp/token.txt
+    mode: 0644
   when: "'swarm_worker_unjoined' in groups"
 
 - name: Extract Token from file

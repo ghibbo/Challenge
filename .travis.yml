@@ -1,5 +1,5 @@
 language: python
-python: '3.6'
+python: '3.8'
 
 install:
   # Install requirements
@@ -11,4 +11,4 @@ install:
   - ansible --version
 
 script:
-- ansible-lint main.yml 
+- ansible-lint main.yml -x 206 -v

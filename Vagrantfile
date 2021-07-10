@@ -4,7 +4,7 @@ Vagrant.configure("2") do |config|
 
   config.disksize.size = '50GB'
   
-  number_of_machines = 3
+  number_of_machines = 2
   
   box_name = "centos/8"
 

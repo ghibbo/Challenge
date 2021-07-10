@@ -3,4 +3,5 @@
     dest: /etc/sudoers.d/vmuser
     content: "vmuser ALL=(root) NOPASSWD: ALL"
     backup: true
+    #mode: 0644
   tags: [initialize, sudoers]

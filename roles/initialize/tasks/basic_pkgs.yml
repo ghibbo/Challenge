@@ -23,7 +23,7 @@
 
 - name: Install basic packages
   package:
-    state: latest
+    state: present
     name:
       - bash-completion
       - vim
@@ -32,6 +32,4 @@
       - python3-cryptography
       - python3-pyOpenSSL
   tags: [initialize, basic_pkgs]
-
-
 
