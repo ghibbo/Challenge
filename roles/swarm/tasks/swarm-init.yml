@@ -42,11 +42,6 @@
     --advertise-addr={{ swarm_iface | default('eth1') }}
   when: "'swarm_manager_unfunctional' in groups"
   register: initialize_first_node
-  # notify: 
-  #   - "Get Manager join-token"
-  #   - "Get Worker join-token"
-  #   - "Copy Token to File"
-  #   - "Save Token Locally"
 
 - name: Get Manager join-token.
   command: docker swarm join-token -q manager
@@ -60,22 +55,7 @@
   when: initialize_first_node is changed
   ignore_errors: "{{ ansible_check_mode }}"
 
-- name: Add Swarm information 
-  # add_host: 
-  #   hostname: "{{ inventory_hostname }}"
-  #   manager_token: "{{ swarm_manager_token }}"
-  #   worker_token: "{{ swarm_worker_token }}"
-  set_fact:
-    swarm_join_token: "{{ swarm_worker_token.stdout }}"
-    cacheable: yes
-  ignore_errors: "{{ ansible_check_mode }}"
-
-- name: Swarm Info Debug
-  ansible.builtin.debug: 
-    msg: "{{ swarm_join_token }}"
-  ignore_errors: "{{ ansible_check_mode }}"
-
-- name: Copy Swarm information to file
+- name: Copy Token to File
   copy: 
     dest: /tmp/token.txt
     content: "{{ swarm_worker_token.stdout }}"
@@ -90,24 +70,26 @@
     flat: yes
   when: token_saved is changed
 
-- name: Update Token Remotely
+- name: Upload Token to Worker
   copy:
     src: /tmp/token.txt
     dest: /tmp/token.txt
     mode: 0644
   when: "'swarm_worker_unjoined' in groups"
 
-- name: Extract Token from file
+- name: Extract Token from File
   slurp:
     src: /tmp/token.txt
   register: token
   ignore_errors: "{{ ansible_check_mode }}"
+  when: "'swarm_worker_unjoined' in groups"
 
-- name: Token Debug
-  ansible.builtin.debug: 
-    msg: "{{ token['content'] | b64decode }}"
-  ignore_errors: "{{ ansible_check_mode }}"
-
+# - name: Token Debug
+#   ansible.builtin.debug: 
+#     msg: "{{ token['content'] | b64decode }}"
+#   ignore_errors: "{{ ansible_check_mode }}"
+#   when: "'swarm_worker_unjoined' in groups"
+  
 - name: Join the Swarm worker nodes.
   command: docker swarm join
         --token "{{ token['content'] | b64decode }}"
