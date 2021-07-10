@@ -1,6 +1,7 @@
+# Challenge
+
 [![Build Status](https://app.travis-ci.com/ghibbo/Challenge.svg?branch=main)](https://app.travis-ci.com/ghibbo/Challenge)
 
-# Challenge
 Realizzare un playbook Ansible che permetta di svolgere le seguenti attività:
 
 1. Provisioning di VMs CentOS. Le VM possono essere locali o su un Cloud provider a scelta.
