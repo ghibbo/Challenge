@@ -295,7 +295,7 @@ Richiesta al server senza autenticazione:
 
 Richiesta al server con autenticazione tramite TLS:
 
-![image-20210711133452666](/home/ghibbo/VM/privChallenge/sicure-docker.png) 
+![](sicure-docker.png) 
 
 
 
@@ -329,7 +329,7 @@ Una volta creato il nostro cluster, possiamo listare i nodi docker usando il com
 docker service node ls
 ```
 
-![image-20210711134736406](/home/ghibbo/VM/privChallenge/nodi-docker.png)
+![](nodi-docker.png)
 
 Per distribuire un'applicazione altamente disponibile e scalabile, utilizzeremo un servizio la cui immagine è pubblicata su Docker Hub.
 
@@ -337,7 +337,7 @@ Per distribuire un'applicazione altamente disponibile e scalabile, utilizzeremo 
 docker service create --name apptest --replicas=6 --publish published=8080,target=8080 nginxdemos/hello
 ```
 
-![image-20210711141947741](/home/ghibbo/VM/privChallenge/docker-cluster.png)
+![](docker-cluster.png)
 
 Per avere una visualizzazione grafica dei nostri nodi nel cluster Swarm, possiamo utilizzare Docker Swarm Visualizer.
 
@@ -345,7 +345,7 @@ Per avere una visualizzazione grafica dei nostri nodi nel cluster Swarm, possiam
 docker run -it -d -p 5000:8080 -v /var/run/docker.sock:/var/run/docker.sock dockersamples/visualizer
 ```
 
-![image-20210711142139024](/home/ghibbo/docker-swarm-visualizer.png)
+![](docker-swarm-visualizer.png)
 
 
 
