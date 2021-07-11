@@ -291,7 +291,7 @@ Lato Client:
 
 Richiesta al server senza autenticazione:
 
-<img src="/home/ghibbo/VM/privChallenge/insicure-docker.png" alt="image-20210711132902899" style="zoom:67%;" />
+![](insicure-docker.png)
 
 Richiesta al server con autenticazione tramite TLS:
 
