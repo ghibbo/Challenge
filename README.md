@@ -6,7 +6,7 @@ Realizzare un playbook Ansible che permetta di svolgere le seguenti attività:
 
 1. Provisioning di VMs CentOS. Le VM possono essere locali o su un Cloud provider a scelta.
 2. Configurare le VM:
-	* Assicurarsi che la partizione utilizzata da Docker abbia almeno 10GB di spazio disponibile
+	* Assicurarsi che la partizione utilizzata da Docker abbia almeno 40GB di spazio disponibile
 3. Setup di Docker sulle VM
 4. Configurare Docker:
 	* Esporre le API REST del Docker Daemon in modo sicuro
@@ -32,7 +32,7 @@ Continuous Integration:
 ## Descrizione
 
 Questo playbook fornisce ***n*** VM Centos, le VM sono locali.
-Le VM sono partizionate per garantire che Docker disponga di almeno 10 GB di spazio disponibile.
+Le VM sono partizionate per garantire che Docker disponga di almeno 40 GB di spazio disponibile.
 Docker espone in modo sicuro le API REST di Docker Daemon.
 Docker Daemon è configurato come un servizio che si avvia automaticamente all'avvio del sistema.
 Inizializza e configura Docker Swarm sul nodo manager e aggiunge i nodi worker allo Swarm.
@@ -85,9 +85,13 @@ vagrant up
 Vagrantfile del progetto:
 
 ```v
+ENV["VAGRANT_EXPERIMENTAL"] = "disks"
+
 Vagrant.configure("2") do |config|
   
-  number_of_machines = 2
+  config.disksize.size = '50GB'
+
+  number_of_machines = 3
   
   box_name = "centos/8"
 
@@ -98,11 +102,13 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider "virtualbox" do |v|
     v.memory = 2048
+
   end
 
   (1..number_of_machines).each do |i|
     config.vm.define "centos_vm#{i}" do |box|
-      box.vm.box = box_name
+      box.vm.box = box_name      
+      box.vm.disk :disk, size: "40GB", name: "extra_storage"
       box.vm.network "private_network", ip: "#{ip_addresses[i-1]}"
       box.vm.hostname = "centos-vm#{i}"
       box.vm.provision "ansible", playbook: "main.yml"
@@ -110,7 +116,6 @@ Vagrant.configure("2") do |config|
   end
 
 end
-
 ```
 
 
@@ -186,11 +191,15 @@ Questo ruolo si occupa di creare i settaggi e le configurazioni base di ogni sin
 
 Settaggi e Configurazioni:
 
+- Aggiunta dei Repo EPEL (Extra Packages for Enterprise Linux)
+
 * Installa pacchetti base:
   * bash-completion
   * vim
   * nano
   * tmux
+  * python3-cryptography (Utility per crittografare e decrittografare i dati.)
+  * python3-pyOpenSSL (Wrapper per libreria OpenSSL)
 * Crea utente e password:
   * user: vmuser
   * password: Password1
@@ -205,16 +214,27 @@ Questo ruolo si occupa di installare, configurare, securizzare e testare docker 
 
 Struttura:
 
+- Creazione di una partizione di 40 GB
+  - Ext4 file system
+  - Mount device in /docker_data
+
 * Check vecchie versioni non installate
 * Creazione di un docker repository
 * Installazione:
   * Docker
   * Pip
   * Docker SDK
+* Generazione delle chiavi e certificati per Autenticazione applicazioni client/server
+  * Creazione della directory Certificates
+  * Creazione di una CA (Certification Authority) locale *self-signed*
+  * Creazione di un certificato Server
+  * Creazione di un certificato Client
+* Avvio del servizio al boot
 * Aggiunta dell'utente 'vmuser' al gruppo docker
 * Update del servizio docker
   * Docker Engine API
 * Securizzazione del servizio
+  * Consente solo connessioni da client autenticati da un certificato firmato da quella CA.
 * Test 
 
 Docker fornisce un'API per l'interazione con il demone Docker (chiamato API Docker Engine), nonché SDK per Go e Python. Gli SDK consentono di creare e ridimensionare app e soluzioni Docker in modo rapido e semplice. Nel progetto si utilizza direttamente l'API di Docker Engine. 
@@ -236,46 +256,157 @@ L'API è pubblica e disponibile per chiunque. Questa non è una buona idea, sopr
 > ​	generate-ssl-certs.sh
 >
 > ```bash
-> mkdir server-cert
-> openssl genrsa -out ./server-cert/docker-daemon-server.key 1024
-> openssl req -new -key ./server-cert/docker-daemon-server.key -x509 -days 180 -out ./server-cert/docker-daemon-server.crt
-> cat ./server-cert/docker-daemon-server.key ./server-cert/docker-daemon-server.crt >./server-cert/docker-daemon-server.pem
-> chmod 600 ./server-cert/docker-daemon-server.key ./server-cert/docker-daemon-server.pem
+> mkdir cert
+> cd cert
+> openssl genrsa -aes256 -out ca-key.pem 4096
+> openssl req -new -x509 -days 365 -key ca-key.pem -sha256 -out ca.pem
+> openssl genrsa -out server-key.pem 4096
+> openssl req -subj "/CN=$HOST" -sha256 -new -key server-key.pem -out server.csr
+> echo subjectAltName = DNS:$HOST,IP:192.168.10.101,IP:127.0.0.1 >> extfile.cnf
+> echo extendedKeyUsage = serverAuth >> extfile.cnf
+> openssl x509 -req -days 365 -sha256 -in server.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out server-cert.pem -extfile extfile.cnf
 > 
-> mkdir client-certopenssl 
-> genrsa -out ./client-cert/docker-daemon-client.key 1024
-> openssl req -new -key ./client-cert/docker-daemon-client.key -x509 -days 180 -out ./client-cert/docker-daemon-client.crt
-> cat ./client-cert/docker-daemon-client.key ./client-cert/docker-daemon-client.crt >./client-cert/docker-daemon-client.pem
-> chmod 600 ./client-cert/docker-daemon-client.key ./client-cert/docker-daemon-client.pem
-> 
+> openssl genrsa -out key.pem 4096
+> openssl req -subj '/CN=client' -new -key key.pem -out client.csr
+> echo extendedKeyUsage = clientAuth > extfile-client.cnf
+> openssl x509 -req -days 365 -sha256 -in client.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out cert.pem -extfile extfile-client.cnf
+> rm -v client.csr server.csr extfile.cnf extfile-client.cnf
+> chmod -v 0400 ca-key.pem key.pem server-key.pem
+> chmod -v 0444 ca.pem server-cert.pem cert.pem
 > ```
 >
 > 
 
 A questo punto dobbiamo abilitare il daemon ad utilizzare questi certificati TLS.
 
-> ​	-H tcp://0.0.0.0:7777 --tlsverify --tlscacert=/......
+> dockerd --tlsverify --tlscacert=CA.pem --tlscert=server_cert.pem --tlskey=server_key.pem -H=0.0.0.0:2376
+
+Lato Client:
+
+> docker --tlsverify --tlscacert=ca.pem --tlscert=cert.pem --tlskey=key.pem -H=192.168.10.101:2376 version
+
+
+
+### Test
+
+Richiesta al server senza autenticazione:
+
+<img src="/home/ghibbo/VM/privChallenge/insicure-docker.png" alt="image-20210711132902899" style="zoom:67%;" />
+
+Richiesta al server con autenticazione tramite TLS:
+
+![image-20210711133452666](/home/ghibbo/VM/privChallenge/sicure-docker.png) 
 
 
 
 ## Swarm
+
+La funzionalità di gestione e orchestrazione del cluster incorporata nel Docker Engine è denominata *Docker Swarm.*
+
+Un cluster Swarm di host o nodi Docker è un cluster di server a disponibilità elevata che viene eseguito in modalità Swarm.
+
+Un *nodo* è un host fisico o una macchina virtuale su cloud o hypervisor locale che esegue Docker. I nodi manager assegnano le attività ai worker in base al numero di repliche del servizio.
+
+Un *servizio* è un attività da eseguire sul nodo manager o nodo/i worker. 
 
 Questo ruolo si occupa di Impostare e configurare un Docker Swarm:
 
 * Determina lo stato di Swarm di ciascun nodo
 * Ogni nodo manager e classificalo come funzionale o non inizializzato
 * Esegue lo stesso controllo sui nodi worker e li classifica come collegati o scollegati al nodo manager 
+* Il cluster Docker Swarm è configurato per utilizzare IP privati. 
 * Inizializza il nodo manager:   docker swarm init
 * Recupera i token manager e worker di unione dal nodo manager attivo
 * Unisce i nodi worker al cluster tramite token
 
 
 
-## Test
+### Test
+
+Una volta creato il nostro cluster, possiamo listare i nodi docker usando il comando:
+
+```docker
+docker service node ls
+```
+
+![image-20210711134736406](/home/ghibbo/VM/privChallenge/nodi-docker.png)
+
+Per distribuire un'applicazione altamente disponibile e scalabile, utilizzeremo un servizio la cui immagine è pubblicata su Docker Hub.
+
+```docker
+docker service create --name apptest --replicas=6 --publish published=8080,target=8080 nginxdemos/hello
+```
+
+![image-20210711141947741](/home/ghibbo/VM/privChallenge/docker-cluster.png)
+
+Per avere una visualizzazione grafica dei nostri nodi nel cluster Swarm, possiamo utilizzare Docker Swarm Visualizer.
+
+```
+docker run -it -d -p 5000:8080 -v /var/run/docker.sock:/var/run/docker.sock dockersamples/visualizer
+```
+
+![image-20210711142139024](/home/ghibbo/docker-swarm-visualizer.png)
 
 
 
+## Code linting
 
+Il linting è *“uno strumento che analizza il codice sorgente per contrassegnare  errori di programmazione, bug, errori stilistici e costrutti sospetti”*. 
+
+*ansible-lint* consente di effettuare questo tipo di verifica sul nostro playbook e ruolo. 
+
+Per installarlo:
+
+```
+pip install ansible-lint
+```
+
+Per verificare il codice ci spostiamo nella directory root del progetto ed eseguiamo:
+
+```
+ansible-lint main.yml
+```
+
+*ansible-lint* verificherà il contenuto del playbook e dei ruoli utilizzati secondo delle regole ben definite, riportandoci eventuali errori e violazioni delle best practices:
+
+```
+risky-file-permissions: File permissions unset or incorrect
+roles/initialize/tasks/sudoers.yml:1 Task/Handler: Add sudo rights for vmuser
+```
+
+E’ possibile ignorare alcune regole specificandone i codici identificativi sulla command line.
+
+```
+ansible-lint main.yml -x 206 -x 503 -v
+
+WARNING  Listing 1 violation(s) that are fatal
+risky-file-permissions: File permissions unset or incorrect
+roles/initialize/tasks/sudoers.yml:1 Task/Handler: Add sudo rights for vmuser
+
+You can skip specific rules or tags by adding them to your configuration file:
+# .ansible-lint
+warn_list:  # or 'skip_list' to silence them completely
+  - experimental  # all rules tagged as experimental
+
+Finished with 0 failure(s), 1 warning(s) on 28 files.
+
+```
+
+Ad ogni modifica dei nostri ruoli potremo utilizzare *ansible-lint* per verificare la conformità e il rispetto delle opportune best practices. 
+
+
+
+## Molecule
+
+[Molecule](https://molecule.readthedocs.io/en/latest/) è uno strumento pensato per testare i propri ruoli Ansible, in diversi  scenari e con diversi sistemi operativi, appoggiandosi a diversi  provider di virtualizzazione e Cloud. 
+
+Installazione:
+
+```
+pip install molecule
+```
+
+TODO: .......
 
 
 
