@@ -1,10 +1,10 @@
 ENV["VAGRANT_EXPERIMENTAL"] = "disks"
 
 Vagrant.configure("2") do |config|
-
-  config.disksize.size = '50GB'
   
-  number_of_machines = 2
+  config.disksize.size = '50GB'
+
+  number_of_machines = 3
   
   box_name = "centos/8"
 
@@ -15,11 +15,12 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider "virtualbox" do |v|
     v.memory = 2048
+
   end
 
   (1..number_of_machines).each do |i|
     config.vm.define "centos_vm#{i}" do |box|
-      box.vm.box = box_name
+      box.vm.box = box_name      
       box.vm.disk :disk, size: "40GB", name: "extra_storage"
       box.vm.network "private_network", ip: "#{ip_addresses[i-1]}"
       box.vm.hostname = "centos-vm#{i}"
